@@ -40,7 +40,7 @@ function installGitAlias(context: vscode.ExtensionContext) {
 export function activate(context: vscode.ExtensionContext) {
 
     // For test and debug purposes
-    context.globalState.update('aliasInstalled', undefined);
+    // context.globalState.update('aliasInstalled', undefined);
 
     installGitAlias(context);
 
@@ -82,20 +82,21 @@ export function activate(context: vscode.ExtensionContext) {
         // Step 2: git fetch + diff, both using workspaceRoot as cwd
         let diff: string;
         try {
+            console.log("Running git fetch...");
             execSync(`git fetch ${remote} ${remoteBranch}`, { 
                 cwd: workspaceRoot, 
                 stdio: ['ignore', 'pipe', 'ignore'] // ignore stdin, pipe stdout, ignore stderr
             });
 
-            const diff = execSync(`git diff ${localBranch} ${remote}/${remoteBranch}`, { 
-                cwd: workspaceRoot
-            }).toString();
+            console.log("Running 'git diff'...");
+            console.log(`DEBUG: Comparing ${localBranch} with ${remote}/${remoteBranch}`);
+
+            diff = execSync(`git diff ${localBranch}..${remote}/${remoteBranch}`, { cwd: workspaceRoot }).toString();
 
             console.log(diff);
             
-        } catch (error) {
-            vscode.window.showErrorMessage(`Revisor: git command failed.`);
-            console.error(error);
+        } catch (e) {
+            console.log("GIT ERROR OUTPUT");
         }
     };
     // Fire on both create and change to cover first run and subsequent runs
