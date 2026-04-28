@@ -1,33 +1,39 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+// ================== Imports ==================== //
 import * as vscode from 'vscode';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-function installGitAlias(context: vscode.ExtensionContext) {
 
-    const hasInstalled = context.globalState.get('aliasInstalled');
-    if (hasInstalled) return;
+// ================== Constants ==================== //
 
-    const scriptDir = path.join(os.homedir(), '.config', 'revisor');
-    const scriptPath = path.join(scriptDir, 'revisor.sh');
-    const argsPath = path.join(scriptDir, 'pending-args.txt');
+const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
+const SCRIPT_PATH = path.join(SCRIPT_DIR, 'revisor.sh');
+const ARGS_PATH = path.join(SCRIPT_DIR, 'pending-args.txt');
 
-    // Convert Windows path to Git Bash compatible path
-    const bashScriptPath = scriptPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (_, d) => `/${d.toLowerCase()}`);
-    const bashArgsPath = argsPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (_, d) => `/${d.toLowerCase()}`);
+
+// ================== Functions ==================== //
+
+function toUnixPath(p: string): string {
+    return p.replace(/\\/g, '/').replace(/^([A-Z]):/, (_, d) => `/${d.toLowerCase()}`);
+}
+
+function installGitAlias(context: vscode.ExtensionContext): void {
+    if (context.globalState.get('aliasInstalled')) return;
+
+    // Add logic for other OSs here in future
+    const bashScriptPath = toUnixPath(SCRIPT_PATH);
+    const bashArgsPath = toUnixPath(ARGS_PATH);
 
     try {
-        fs.mkdirSync(scriptDir, { recursive: true });
-        fs.writeFileSync(scriptPath,
-        `#!/bin/bash\necho "$1 $2 $3" > "${bashArgsPath}"\n`,
-        { mode: 0o755 }
+        fs.mkdirSync(SCRIPT_DIR, { recursive: true });
+        fs.writeFileSync(
+            SCRIPT_PATH,
+            `#!/bin/bash\necho "$1 $2 $3" > "${bashArgsPath}"\n`,
+            { mode: 0o755 }
         );
-
         execSync(`git config --global alias.revisor "!bash '${bashScriptPath}'"`);
-
         vscode.window.showInformationMessage('Revisor: git alias installed. You can now use git revisor.');
     } catch (error) {
         vscode.window.showErrorMessage(`Revisor: failed to install git alias. ${error}`);
@@ -37,40 +43,36 @@ function installGitAlias(context: vscode.ExtensionContext) {
     context.globalState.update('aliasInstalled', true);
 }
 
-export function activate(context: vscode.ExtensionContext) {
+// ================== Main ==================== //
 
-    // For test and debug purposes
-    // context.globalState.update('aliasInstalled', undefined);
+export function activate(context: vscode.ExtensionContext): void {
+
+    // context.globalState.update('aliasInstalled', undefined); // debug only
 
     installGitAlias(context);
 
-    const argsPath = path.join(os.homedir(), '.config', 'revisor', 'pending-args.txt');
-
-    // Watch for the args file being written by revisor.sh
+    // Watcher must be created inside activate()
     const watcher = vscode.workspace.createFileSystemWatcher(
         new vscode.RelativePattern(
-            vscode.Uri.file(path.join(os.homedir(), '.config', 'revisor')),
+            vscode.Uri.file(SCRIPT_DIR),
             'pending-args.txt'
         )
     );
 
     const handleReview = async () => {
 
-        // Check workspace first — everything else depends on it
         const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-
-        console.log(workspaceRoot);
         if (!workspaceRoot) {
             vscode.window.showErrorMessage('Revisor: please open a project folder in VSCode before running git revisor.');
             return;
         }
 
-        // Step 1: read the args
-        let localBranch: string, remote: string, remoteBranch: string;
+        // Read the args
+        let remote: string, localBranch: string, remoteBranch: string;
         try {
-            const args = fs.readFileSync(argsPath, 'utf8').trim().split(' ');
+            const args = fs.readFileSync(ARGS_PATH, 'utf8').trim().split(' ');
             if (args.length !== 3) {
-                vscode.window.showErrorMessage('Revisor: invalid arguments in pending-args.txt');
+                vscode.window.showErrorMessage('Revisor: invalid arguments. Usage: git revisor <remote> <localBranch> <remoteBranch>');
                 return;
             }
             [remote, localBranch, remoteBranch] = args;
@@ -79,31 +81,27 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // Step 2: git fetch + diff, both using workspaceRoot as cwd
+        // Git fetch + diff
         let diff: string;
         try {
-            console.log("Running git fetch...");
-            execSync(`git fetch ${remote} ${remoteBranch}`, { 
-                cwd: workspaceRoot, 
-                stdio: ['ignore', 'pipe', 'ignore'] // ignore stdin, pipe stdout, ignore stderr
-            });
-
-            console.log("Running 'git diff'...");
-            console.log(`DEBUG: Comparing ${localBranch} with ${remote}/${remoteBranch}`);
-
+            execSync(`git fetch ${remote} ${remoteBranch}`, { cwd: workspaceRoot });
             diff = execSync(`git diff ${localBranch}..${remote}/${remoteBranch}`, { cwd: workspaceRoot }).toString();
-
-            console.log(diff);
-            
-        } catch (e) {
-            console.log("GIT ERROR OUTPUT");
+        } catch (error) {
+            vscode.window.showErrorMessage(`Revisor: git command failed. ${error}`);
+            return;
         }
+
+        if (!diff.trim()) {
+            vscode.window.showInformationMessage('Revisor: no differences found between branches.');
+            return;
+        }
+
+        // Next: send diff to Ollama
     };
-    // Fire on both create and change to cover first run and subsequent runs
+
     watcher.onDidCreate(handleReview);
     watcher.onDidChange(handleReview);
-
     context.subscriptions.push(watcher);
 }
-// This method is called when your extension is deactivated
-export function deactivate() {}
+
+export function deactivate(): void {}
