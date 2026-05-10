@@ -43,13 +43,93 @@ function installGitAlias(context: vscode.ExtensionContext): void {
     context.globalState.update('aliasInstalled', true);
 }
 
+async function checkOllama(): Promise<boolean> {
+    try {
+        const res = await fetch('http://localhost:11434');
+        return res.ok;
+    } catch {
+        return false;
+    }
+}
+
+async function statusCheck(): Promise<void> {
+    if (!await checkOllama()) {
+        const action = await vscode.window.showErrorMessage(
+            'Revisor: Ollama is not running. Please install Ollama and run "ollama serve" before using Revisor.',
+            'Install Ollama',
+            'Dismiss'
+        );
+        if (action === 'Install Ollama') {
+            vscode.env.openExternal(vscode.Uri.parse('https://ollama.com'));
+        }
+        return;
+    }
+}
+
+async function checkModel(model: string): Promise<boolean> {
+    try {
+        const res = await fetch('http://localhost:11434/api/tags');
+        const data = await res.json() as { models: { name: string }[] };
+        return data.models.some(m => m.name.startsWith(model));
+    } catch {
+        return false;
+    }
+}
+
+async function modelCheck(): Promise<void> {
+    if (!await checkModel('codellama')) {
+        const action = await vscode.window.showErrorMessage(
+            'Revisor: codellama model not found. Please run "ollama pull codellama" in your terminal.',
+            'Dismiss'
+        );
+    return;
+    }
+}
+
+// TO DO: set up the custom ollama model during first iteration
+
+async function reviewWithOllama(diff: string, localBranch: string, remote: string, remoteBranch: string): Promise<string> {
+    const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff}` // as above
+
+    const response = await fetch(`${}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: 'revisor-model',
+            prompt,
+            stream: false
+        })
+    });
+
+    const data = await response.json() as { response: string };
+    
+    // Strip markdown fences if the model ignores instructions
+    const cleaned = data.response
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+
+    // Validate it's actually JSON before writing to REVIEW.md
+    try {
+        JSON.parse(cleaned);
+    } catch {
+        throw new Error('Ollama returned invalid JSON. Please try again.');
+    }
+
+    return cleaned;
+}
 // ================== Main ==================== //
 
 export function activate(context: vscode.ExtensionContext): void {
 
     // context.globalState.update('aliasInstalled', undefined); // debug only
 
+    // Set up environment
     installGitAlias(context);
+
+    // Check if Ollama is installed and the model pulled
+    statusCheck();
+    modelCheck();    
 
     // Watcher must be created inside activate()
     const watcher = vscode.workspace.createFileSystemWatcher(
@@ -97,6 +177,7 @@ export function activate(context: vscode.ExtensionContext): void {
         }
 
         // Next: send diff to Ollama
+
     };
 
     watcher.onDidCreate(handleReview);
