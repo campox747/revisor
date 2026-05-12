@@ -86,7 +86,9 @@ async function modelCheck(): Promise<void> {
     }
 }
 
+// TO DO: split file into multiple helpers and orcherstrate everything from extension.ts
 // TO DO: set up the custom ollama model during first iteration
+
 
 async function reviewWithOllama(diff: string, localBranch: string, remote: string, remoteBranch: string): Promise<string> {
     const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff}` // as above
@@ -175,9 +177,6 @@ export function activate(context: vscode.ExtensionContext): void {
             vscode.window.showInformationMessage('Revisor: no differences found between branches.');
             return;
         }
-
-        // Next: send diff to Ollama
-
     };
 
     watcher.onDidCreate(handleReview);
