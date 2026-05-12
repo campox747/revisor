@@ -11,6 +11,7 @@ import * as path from 'path';
 const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
 const SCRIPT_PATH = path.join(SCRIPT_DIR, 'revisor.sh');
 const ARGS_PATH = path.join(SCRIPT_DIR, 'pending-args.txt');
+const ollamaUrl = 'http://localhost:11434';
 
 
 // ================== Functions ==================== //
@@ -43,9 +44,52 @@ function installGitAlias(context: vscode.ExtensionContext): void {
     context.globalState.update('aliasInstalled', true);
 }
 
+function getOllamaExecutable(): string {
+    return path.join(process.env['LOCALAPPDATA'] || '', 'Programs', 'Ollama', 'ollama.exe');
+}
+
+async function setupOllamaModel(context: vscode.ExtensionContext): Promise<void> {
+    if (context.globalState.get('ollamaModelInstalled')) return;
+
+    const ollamaExe = getOllamaExecutable();
+    const modelfilePath = path.join(SCRIPT_DIR, 'Modelfile');
+
+    fs.writeFileSync(modelfilePath, `FROM codellama
+
+SYSTEM """
+You are a code reviewer analyzing git diffs.
+You always return a JSON object with this exact structure:
+{
+    "summary": "one paragraph overview of what changed",
+    "changes": [
+        {
+            "file": "filename",
+            "description": "what changed in this file",
+            "consequences": "impact of this change on the codebase"
+        }
+    ],
+    "risks": ["any potential issues or breaking changes"],
+    "verdict": "safe | review needed | breaking"
+}
+Return ONLY the JSON object. No markdown, no explanation, no backticks.
+"""
+
+PARAMETER temperature 0.2
+PARAMETER num_ctx 8192
+`);
+
+    try {
+        execSync(`"${ollamaExe}" create revisor-model -f "${modelfilePath}"`);
+        context.globalState.update('ollamaModelInstalled', true);
+        vscode.window.showInformationMessage('Revisor: AI model ready.');
+    } catch (error) {
+        vscode.window.showErrorMessage(`Revisor: failed to create Ollama model. ${error}`);
+    }
+}
+
 async function checkOllama(): Promise<boolean> {
     try {
-        const res = await fetch('http://localhost:11434');
+        const res = await fetch(ollamaUrl);
         return res.ok;
     } catch {
         return false;
@@ -77,9 +121,9 @@ async function checkModel(model: string): Promise<boolean> {
 }
 
 async function modelCheck(): Promise<void> {
-    if (!await checkModel('codellama')) {
+    if (!await checkModel('revisor-model')) {
         const action = await vscode.window.showErrorMessage(
-            'Revisor: codellama model not found. Please run "ollama pull codellama" in your terminal.',
+            'Revisor: revisor model not found. Please restart the extension.',
             'Dismiss'
         );
     return;
@@ -88,10 +132,11 @@ async function modelCheck(): Promise<void> {
 
 // TO DO: set up the custom ollama model during first iteration
 
+
 async function reviewWithOllama(diff: string, localBranch: string, remote: string, remoteBranch: string): Promise<string> {
     const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff}` // as above
-
-    const response = await fetch(`${}/api/generate`, {
+    console.log(diff);
+    const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,7 +165,7 @@ async function reviewWithOllama(diff: string, localBranch: string, remote: strin
 }
 // ================== Main ==================== //
 
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
     // context.globalState.update('aliasInstalled', undefined); // debug only
 
@@ -128,8 +173,12 @@ export function activate(context: vscode.ExtensionContext): void {
     installGitAlias(context);
 
     // Check if Ollama is installed and the model pulled
-    statusCheck();
-    modelCheck();    
+    await statusCheck();
+
+    // Create custom ollama model (first run)
+    await setupOllamaModel(context);
+
+    await modelCheck();    
 
     // Watcher must be created inside activate()
     const watcher = vscode.workspace.createFileSystemWatcher(
@@ -177,6 +226,8 @@ export function activate(context: vscode.ExtensionContext): void {
         }
 
         // Next: send diff to Ollama
+        let review = await reviewWithOllama(diff, localBranch, remote, remoteBranch);
+        console.log(review);
 
     };
 
