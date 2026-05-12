@@ -1,3 +1,12 @@
+// ================== Imports ==================== //
+
+import * as vscode from 'vscode';
+import { execSync } from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+
+
 // ================== Constants ==================== //
 
 const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
@@ -14,7 +23,6 @@ export function toUnixPath(p: string): string {
 export function installGitAlias(context: vscode.ExtensionContext): void {
     if (context.globalState.get('aliasInstalled')) return;
 
-    // Add logic for other OSs here in future
     const bashScriptPath = toUnixPath(SCRIPT_PATH);
     const bashArgsPath = toUnixPath(ARGS_PATH);
 
@@ -33,4 +41,47 @@ export function installGitAlias(context: vscode.ExtensionContext): void {
     }
 
     context.globalState.update('aliasInstalled', true);
+}
+
+export function getOllamaExecutable(): string {
+    return path.join(process.env['LOCALAPPDATA'] || '', 'Programs', 'Ollama', 'ollama.exe');
+}
+
+export async function setupOllamaModel(context: vscode.ExtensionContext): Promise<void> {
+    if (context.globalState.get('ollamaModelInstalled')) return;
+
+    const ollamaExe = getOllamaExecutable();
+    const modelfilePath = path.join(SCRIPT_DIR, 'Modelfile');
+
+    fs.writeFileSync(modelfilePath, `FROM codellama
+
+SYSTEM """
+You are a code reviewer analyzing git diffs.
+You always return a JSON object with this exact structure:
+{
+    "summary": "one paragraph overview of what changed",
+    "changes": [
+        {
+            "file": "filename",
+            "description": "what changed in this file",
+            "consequences": "impact of this change on the codebase"
+        }
+    ],
+    "risks": ["any potential issues or breaking changes"],
+    "verdict": "safe | review needed | breaking"
+}
+Return ONLY the JSON object. No markdown, no explanation, no backticks.
+"""
+
+PARAMETER temperature 0.2
+PARAMETER num_ctx 8192
+`);
+
+    try {
+        execSync(`"${ollamaExe}" create revisor-model -f "${modelfilePath}"`);
+        context.globalState.update('ollamaModelInstalled', true);
+        vscode.window.showInformationMessage('Revisor: AI model ready.');
+    } catch (error) {
+        vscode.window.showErrorMessage(`Revisor: failed to create Ollama model. ${error}`);
+    }
 }
