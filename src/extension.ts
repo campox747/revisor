@@ -7,11 +7,12 @@ import { installGitAlias, setupOllamaModel} from './setup/gitAlias';
 import { statusCheck, modelCheck } from './ai/ollama';
 import { reviewWithOllama } from './ai/review';
 import { handleReview } from './git/diff';
-
+import { writeReport } from './report/writer';
 
 // ================== Constants ==================== //
 
 const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
+const review  = '';
 
 // ================== Main ==================== //
 
@@ -44,6 +45,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             const review = await reviewWithOllama(diff, localBranch, remote, remoteBranch);
 
             console.log(review);
+
+            const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+            if (workspaceRoot) {
+                writeReport(workspaceRoot, review, localBranch, remote, remoteBranch);
+            }
         }
     };
 
