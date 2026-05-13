@@ -17,6 +17,7 @@ const review  = '';
 // ================== Main ==================== //
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
     // context.globalState.update('aliasInstalled', undefined); // debug only
 
@@ -24,6 +25,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     installGitAlias(context);
 
     // Check if Ollama is installed and the model pulled
+    await statusCheck();
+
+    // Create custom ollama model (first run)
+    await setupOllamaModel(context);
+
+    await modelCheck();    
     await statusCheck();
 
     // Create custom ollama model (first run)
