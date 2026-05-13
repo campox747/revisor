@@ -7,7 +7,7 @@ import { installGitAlias, setupOllamaModel} from './setup/gitAlias';
 import { statusCheck, modelCheck } from './ai/ollama';
 import { reviewWithOllama } from './ai/review';
 import { handleReview } from './git/diff';
-
+import { writeReport } from './report/writer';
 
 // ================== Constants ==================== //
 
@@ -29,6 +29,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     await setupOllamaModel(context);
 
     await modelCheck();    
+    await statusCheck();
+
+    // Create custom ollama model (first run)
+    await setupOllamaModel(context);
+
+    await modelCheck();    
 
     const watcher = vscode.workspace.createFileSystemWatcher(
         new vscode.RelativePattern(
@@ -44,6 +50,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             const review = await reviewWithOllama(diff, localBranch, remote, remoteBranch);
 
             console.log(review);
+
+            const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+            if (workspaceRoot) {
+                writeReport(workspaceRoot, review, localBranch, remote, remoteBranch);
+            }
         }
     };
 
