@@ -1,9 +1,3 @@
-// ================== Imports ==================== //
-
-import * as os from 'os';
-import * as path from 'path';
-
-
 // ================== Constants ==================== //
 
 const ollamaUrl = 'http://localhost:11434';

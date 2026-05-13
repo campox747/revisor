@@ -8,6 +8,7 @@ import * as path from 'path';
 import { installGitAlias, setupOllamaModel} from './setup/gitAlias';
 import { statusCheck, modelCheck } from './ai/ollama';
 import { reviewWithOllama } from './ai/review';
+import { handleReview } from './git/diff';
 
 
 // ================== Constants ==================== //
@@ -33,7 +34,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     await modelCheck();    
 
-    // Watcher must be created inside activate()
     const watcher = vscode.workspace.createFileSystemWatcher(
         new vscode.RelativePattern(
             vscode.Uri.file(SCRIPT_DIR),
@@ -41,51 +41,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         )
     );
 
-    const handleReview = async () => {
+     const onFileChange = async () => {
+        const result = await handleReview();
+        if (result) {
+            const { diff, remote, localBranch, remoteBranch } = result;
+            const review = await reviewWithOllama(diff, localBranch, remote, remoteBranch);
 
-        const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-        if (!workspaceRoot) {
-            vscode.window.showErrorMessage('Revisor: please open a project folder in VSCode before running git revisor.');
-            return;
+            console.log(review);
         }
-
-        // Read the args
-        let remote: string, localBranch: string, remoteBranch: string;
-        try {
-            const args = fs.readFileSync(ARGS_PATH, 'utf8').trim().split(' ');
-            if (args.length !== 3) {
-                vscode.window.showErrorMessage('Revisor: invalid arguments. Usage: git revisor <remote> <localBranch> <remoteBranch>');
-                return;
-            }
-            [remote, localBranch, remoteBranch] = args;
-        } catch {
-            vscode.window.showErrorMessage('Revisor: could not read pending-args.txt');
-            return;
-        }
-
-        // Git fetch + diff
-        let diff: string;
-        try {
-            execSync(`git fetch ${remote} ${remoteBranch}`, { cwd: workspaceRoot });
-            diff = execSync(`git diff ${localBranch}..${remote}/${remoteBranch}`, { cwd: workspaceRoot }).toString();
-        } catch (error) {
-            vscode.window.showErrorMessage(`Revisor: git command failed. ${error}`);
-            return;
-        }
-
-        if (!diff.trim()) {
-            vscode.window.showInformationMessage('Revisor: no differences found between branches.');
-            return;
-        }
-
-        // Next: send diff to Ollama
-        let review = await reviewWithOllama(diff, localBranch, remote, remoteBranch);
-        console.log(review);
-
     };
 
-    watcher.onDidCreate(handleReview);
-    watcher.onDidChange(handleReview);
+    watcher.onDidCreate(onFileChange);
+    watcher.onDidChange(onFileChange);
     context.subscriptions.push(watcher);
 }
 

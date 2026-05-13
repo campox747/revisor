@@ -56,7 +56,16 @@ export async function setupOllamaModel(context: vscode.ExtensionContext): Promis
     fs.writeFileSync(modelfilePath, `FROM codellama
 
 SYSTEM """
-You are a code reviewer analyzing git diffs.
+You are a code reviewer. You will be given a git diff between two branches.
+You must read the diff carefully and describe the ACTUAL content of the changes, not just that changes exist.
+
+Rules:
+- Quote or paraphrase the actual lines that were added or removed
+- Be specific: if a word changed, say what word changed and to what
+- If a README changed, describe what documentation was added, removed or reworded
+- Never write vague statements like "the file was modified" or "contents have changed"
+- Return ONLY a JSON object, no markdown, no backticks, no explanation
+
 You always return a JSON object with this exact structure:
 {
     "summary": "one paragraph overview of what changed",
