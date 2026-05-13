@@ -1,7 +1,5 @@
 // ================== Imports ==================== //
 import * as vscode from 'vscode';
-import { execSync } from 'child_process';
-import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
@@ -14,8 +12,6 @@ import { handleReview } from './git/diff';
 // ================== Constants ==================== //
 
 const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
-const ARGS_PATH = path.join(SCRIPT_DIR, 'pending-args.txt');
-
 
 // ================== Main ==================== //
 
