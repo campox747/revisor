@@ -68,4 +68,7 @@ You can author your README using Visual Studio Code. Here are some useful editor
 * [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
 * [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
-**Enjoy!**
+## Requirements
+1. Install [Ollama](https://ollama.com)
+2. Pull the codellama model: `ollama pull codellama`
+3. Start Ollama: `ollama serve`
