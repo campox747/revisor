@@ -4,6 +4,15 @@ const ollamaUrl = 'http://localhost:11434';
 
 // ================== Functions ==================== //
 
+export function trimDiff(diff: string, maxLines = 300): string {
+    const lines = diff.split('\n');
+    if (lines.length <= maxLines) return diff;
+
+    const trimmed = lines.slice(0, maxLines);
+    trimmed.push(`\n... diff truncated at ${maxLines} lines for performance ...`);
+    return trimmed.join('\n');
+}
+
 export async function reviewWithOllama(diff: string, localBranch: string, remote: string, remoteBranch: string): Promise<string> {
     const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff}` // as above
     console.log(diff);

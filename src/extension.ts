@@ -5,7 +5,7 @@ import * as path from 'path';
 
 import { installGitAlias, setupOllamaModel} from './setup/gitAlias';
 import { statusCheck, modelCheck } from './ai/ollama';
-import { reviewWithOllama } from './ai/review';
+import { reviewWithOllama, trimDiff } from './ai/review';
 import { handleReview } from './git/diff';
 import { writeReport } from './report/writer';
 
@@ -49,7 +49,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         const result = await handleReview();
         if (result) {
             const { diff, remote, localBranch, remoteBranch } = result;
-            const review = await reviewWithOllama(diff, localBranch, remote, remoteBranch);
+            const trimmedDiff = trimDiff(diff);
+            const review = await reviewWithOllama(trimmedDiff, localBranch, remote, remoteBranch);
 
             console.log(review);
 
