@@ -18,6 +18,8 @@ const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
     // context.globalState.update('aliasInstalled', undefined); // debug only
+    context.globalState.update('ollamaModelInstalled', undefined); // debug only
+
 
     // Set up environment
     installGitAlias(context);
