@@ -4,6 +4,43 @@ const ollamaUrl = 'http://localhost:11434';
 
 // ================== Functions ==================== //
 
+interface ParsedDiff {
+    files: {
+        filename: string;
+        added: string[];
+        removed: string[];
+    }[];
+}
+
+export function parseDiff(diff: string): ParsedDiff {
+    const files: ParsedDiff['files'] = [];
+    let currentFile: ParsedDiff['files'][0] | null = null;
+
+    for (const line of diff.split('\n')) {
+        // Detect new file
+        if (line.startsWith('diff --git')) {
+            if (currentFile) files.push(currentFile);
+            const match = line.match(/diff --git a\/.+ b\/(.+)/);
+            currentFile = {
+                filename: match ? match[1] : 'unknown',
+                added: [],
+                removed: []
+            };
+        }
+        // Added line
+        else if (line.startsWith('+') && !line.startsWith('+++') && currentFile) {
+            currentFile.added.push(line.substring(1).trim());
+        }
+        // Removed line
+        else if (line.startsWith('-') && !line.startsWith('---') && currentFile) {
+            currentFile.removed.push(line.substring(1).trim());
+        }
+    }
+
+    if (currentFile) files.push(currentFile);
+    return { files };
+}
+
 export function trimDiff(diff: string, maxLines = 300): string {
     const lines = diff.split('\n');
     if (lines.length <= maxLines) return diff;
@@ -14,7 +51,25 @@ export function trimDiff(diff: string, maxLines = 300): string {
 }
 
 export async function reviewWithOllama(diff: string, localBranch: string, remote: string, remoteBranch: string): Promise<string> {
-    const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff}` // as above
+
+    const parsed = parseDiff(diff);
+
+    const humanReadableChanges = parsed.files.map(f => {
+        const parts: string[] = [`File: ${f.filename}`];
+        if (f.added.length > 0) {
+            parts.push(`Added lines:\n${f.added.map(l => `  + ${l}`).join('\n')}`);
+        }
+        if (f.removed.length > 0) {
+            parts.push(`Removed lines:\n${f.removed.map(l => `  - ${l}`).join('\n')}`);
+        }
+        return parts.join('\n');
+    }).join('\n\n');
+
+    const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff} 
+    The following lines were explicitly added or removed:
+    
+    ${humanReadableChanges}`
+
     console.log(diff);
     const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: 'POST',

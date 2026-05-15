@@ -11,7 +11,7 @@ import * as path from 'path';
 
 const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
 const ARGS_PATH = path.join(SCRIPT_DIR, 'pending-args.txt');
-
+const MOCK_DIFF_PATH = path.join(SCRIPT_DIR, 'mock-diff.txt');
 
 // ================== Functions ==================== //
     export const handleReview = async (): Promise<{ diff: string; remote: string; localBranch: string; remoteBranch: string } | undefined> => {
@@ -35,7 +35,7 @@ const ARGS_PATH = path.join(SCRIPT_DIR, 'pending-args.txt');
             vscode.window.showErrorMessage('Revisor: could not read pending-args.txt');
             return;
         }
-
+/*
         // Git fetch + diff
         let diff: string;
         try {
@@ -51,5 +51,29 @@ const ARGS_PATH = path.join(SCRIPT_DIR, 'pending-args.txt');
             return;
         }
 
-        return {diff, remote, localBranch, remoteBranch};
+        return {diff, remote, localBranch, remoteBranch}; */
+
+        // 3. THE MOCK BYPASS: Read from the .txt file instead of executing Git
+    let diff: string;
+    try {
+        if (!fs.existsSync(MOCK_DIFF_PATH)) {
+            // Create a dummy file if it doesn't exist
+            fs.writeFileSync(MOCK_DIFF_PATH, "PASTE YOUR TEST DIFF HERE");
+            vscode.window.showWarningMessage(`Revisor: Created empty ${MOCK_DIFF_PATH}. Please add content to it.`);
+            return;
+        }
+
+        diff = fs.readFileSync(MOCK_DIFF_PATH, 'utf8');
+        console.log('--- MOCK MODE: Reading diff from file instead of Git ---');
+    } catch (error) {
+        vscode.window.showErrorMessage(`Revisor: Failed to read mock-diff.txt. ${error}`);
+        return;
+    }
+
+    if (!diff.trim() || diff === "PASTE YOUR TEST DIFF HERE") {
+        vscode.window.showInformationMessage('Revisor: Mock diff is empty.');
+        return;
+    }
+
+    return { diff, remote, localBranch, remoteBranch };
     };

@@ -52,6 +52,10 @@ export async function writeReport(
     ].join('\n');
 
     // Create the file with a header if it doesn't exist yet
+
+    //--------------- TO DO: ADD CHECK FOR EMPTY FILE --------------------
+
+
     if (!fs.existsSync(reviewPath)) {
         fs.writeFileSync(reviewPath, `# Revisor — Code Review History\n\n`);
 

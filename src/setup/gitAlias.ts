@@ -53,7 +53,7 @@ export async function setupOllamaModel(context: vscode.ExtensionContext): Promis
     const ollamaExe = getOllamaExecutable();
     const modelfilePath = path.join(SCRIPT_DIR, 'Modelfile');
 
-    fs.writeFileSync(modelfilePath, `FROM codellama
+    fs.writeFileSync(modelfilePath, `FROM qwen2.5-coder:1.5b
 
 SYSTEM """
 You are a code reviewer. You will be given a git diff between two branches.
