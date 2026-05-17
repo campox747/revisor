@@ -1,35 +1,43 @@
-# revisor README
+# Revisor - Your local AI-powered commit reviewer
 
-This is the README for your extension "revisor". After writing up a brief description, we recommend including the following sections.
+Revisor is a local, privacy-first AI assistant that helps developers understand incoming commits before merging them. Controlled directly from your terminal with a single command, Revisor fetches the latest remote changes, analyzes the diff against your local branch, and runs it through a local AI model to generate a structured review. The final report is displayed instantly inside VS Code as a side-by-side Markdown document.
+
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+* **Terminal-Driven Workflow:** Trigger code reviews straight from your regular terminal flow using a native Git alias.
+* **100% Local & Private:** Your source code never leaves your machine. All analysis is performed entirely on your local hardware.
+* **Smart Pre-Merge Sight:** Automatically executes a clean `git fetch` background pipeline to see what has changed on the remote branch without polluting your current working state.
+* **Rich Markdown Reports:** Displays an interactive, clean review panel highlighting summaries, breaking changes, and structural risks.
 
-For example if there is an image subfolder under your extension project workspace:
+## How It Works
 
-\!\[feature X\]\(images/feature-x.png\)
+Once installed, Revisor injects a lightweight global script wrapper into your Git config. 
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+When you run `git revisor`, the extension uses a local file-bridge pipeline (`pending-args.txt`) to securely pass environment metrics from your shell directly to the VS Code Extension Host, circumventing traditional CLI-to-editor limitations.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Revisor relies on Git and a local AI engine to guarantee complete data security. 
 
-## Extension Settings
+1. **Install Ollama:** Download and run [Ollama](https://ollama.com) on your machine.
+2. **Pull a Coding Model:** Open your terminal and download a model optimized for code intelligence. Depending on your machine's hardware, we recommend:
+   * **For lightweight setups (8GB RAM):** `ollama pull qwen2.5-coder:1.5b`
+   * **For standard developer setups (16GB+ RAM):** `ollama pull qwen2.5-coder:7b` or `deepseek-coder-v2:lite` (6GB+ VRAM)
+   * **For high-performance rigs:** `ollama pull llama3:8b`
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Usage
 
-For example:
+Open your terminal in any active Git repository and type:
 
-This extension contributes the following settings:
+```bash
+git revisor <remote> <localBranch> <remoteBranch>
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+```
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+None
 
 ## Release Notes
 
@@ -37,38 +45,9 @@ Users appreciate release notes as you update your extension.
 
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Initial release of Revisor
 
 ---
 
-## Following extension guidelines
+Thank you for choosing Revisor!
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-## Requirements
-1. Install [Ollama](https://ollama.com)
-2. Pull the codellama model: `ollama pull codellama`
-3. Start Ollama: `ollama serve`
