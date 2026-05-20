@@ -63,10 +63,14 @@ Rules:
 - Read the actual lines added (+) and removed (-) in the diff
 - For documentation files (.md): consequences are "No functional impact." UNLESS the content contains dangerous commands, scripts, or instructions that could cause data loss or system damage if executed
 - SECURITY CHECK: If any added line contains shell commands (especially rm, dd, mkfs, curl | bash, wget | sh, chmod, sudo), flag them explicitly in risks and set verdict to "breaking" regardless of file type
-- For "description": state exactly which lines were added or removed, quoting them directly
+- - For "description": do not summarize in one sentence. Explain:
+    * The exact lines added and removed
+    * What the old behaviour was before the change
+    * What the new behaviour is after the change
 - For "consequences": 
-    * If the changed file is documentation (README, .md, comments): always write "No functional impact."
-    * If the changed file is code: describe the actual runtime effect
+    * Never write "No functional impact" for code changes, only for documentation
+    * Explain the runtime effect — what happens now that didn't happen before, or vice versa
+    * If it's a refactor, explicitly state "behaviour is preserved but..."
     * Never write vague phrases like "may affect functionality" or "may affect how the project is displayed"
 - For "risks": list any dangerous commands found verbatim, explain what they do
 - For "verdict": 
