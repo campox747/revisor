@@ -18,13 +18,14 @@ When you run `git revisor`, the extension uses a local file-bridge pipeline (`pe
 
 ## Requirements
 
-Revisor relies on Git and a local AI engine to guarantee complete data security. 
+Revisor relies on Git and a local AI engine to guarantee complete data security.
 
 1. **Install Ollama:** Download and run [Ollama](https://ollama.com) on your machine.
 2. **Pull a Coding Model:** Open your terminal and download a model optimized for code intelligence. Depending on your machine's hardware, we recommend:
-   * **For lightweight setups (8GB RAM):** `ollama pull qwen2.5-coder:1.5b`
-   * **For standard developer setups (16GB+ RAM):** `ollama pull qwen2.5-coder:7b` or `deepseek-coder-v2:lite` (6GB+ VRAM)
-   * **For high-performance rigs:** `ollama pull llama3:8b`
+   * **Lightweight (8GB RAM, no dedicated GPU):** `ollama pull qwen2.5-coder:1.5b`
+   * **Standard (16GB RAM, 6GB+ VRAM):** `ollama pull deepseek-coder-v2:lite`
+   * **High performance (32GB RAM, 10GB+ VRAM):** `ollama pull qwen2.5-coder:14b`
+3. **Start Ollama:** Run `ollama serve` in your terminal.
 
 ## Usage
 
