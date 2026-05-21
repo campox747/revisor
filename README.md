@@ -14,7 +14,7 @@ Revisor is a local, privacy-first AI assistant that helps developers understand 
 
 Once installed, Revisor injects a lightweight global script wrapper into your Git config. 
 
-When you run `git revisor`, the extension uses a local file-bridge pipeline (`pending-args.txt`) to securely pass environment metrics from your shell directly to the VS Code Extension Host, circumventing traditional CLI-to-editor limitations.
+When you run `git revisor`, the extension uses a local file-bridge pipeline (`pending-args.txt`) to securely pass environment metrics from your shell directly to the VS Code Extension Host, circumventing CLI-to-editor limitations.
 
 ## Requirements
 
