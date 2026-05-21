@@ -1,1 +1,0 @@
-test file for automatic git fetch and diff

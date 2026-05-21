@@ -55,7 +55,14 @@ export async function reviewWithOllama(diff: string, localBranch: string, remote
     const parsed = parseDiff(diff);
 
     const humanReadableChanges = parsed.files.map(f => {
-        const parts: string[] = [`File: ${f.filename}`];
+        const ext = f.filename.split('.').pop();
+        const fileType = ext === 'md' ? 'documentation'
+            : ext === 'json' ? 'configuration'
+            : 'file';
+
+        const parts: string[] = [
+            `File: ${f.filename} (${fileType})`
+        ];
         if (f.added.length > 0) {
             parts.push(`Added lines:\n${f.added.map(l => `  + ${l}`).join('\n')}`);
         }
@@ -66,9 +73,7 @@ export async function reviewWithOllama(diff: string, localBranch: string, remote
     }).join('\n\n');
 
     const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff} 
-    The following lines were explicitly added or removed:
-    
-    ${humanReadableChanges}`
+    The following lines were explicitly added or removed: ${humanReadableChanges}`
 
     console.log(diff);
     const response = await fetch(`${ollamaUrl}/api/generate`, {

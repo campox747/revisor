@@ -22,7 +22,7 @@ Revisor relies on Git and a local AI engine to guarantee complete data security.
 
 1. **Install Ollama:** Download and run [Ollama](https://ollama.com) on your machine.
 2. **Pull a Coding Model:** Open your terminal and download a model optimized for code intelligence. Depending on your machine's hardware, we recommend:
-   * **Lightweight (8GB RAM, no dedicated GPU):** `ollama pull qwen2.5-coder:1.5b`
+   * **Lightweight (8GB RAM, no dedicated GPU):** `ollama pull qwen2.5-coder:1.5b` (Note: The 1.5B parameter limit restricts deep reasoning. Use this primarily for simple, everyday changes rather than complex architectural reviews.)
    * **Standard (16GB RAM, 6GB+ VRAM):** `ollama pull deepseek-coder-v2:lite`
    * **High performance (32GB RAM, 10GB+ VRAM):** `ollama pull qwen2.5-coder:14b`
 3. **Start Ollama:** Run `ollama serve` in your terminal.
@@ -39,10 +39,6 @@ git revisor <remote> <localBranch> <remoteBranch>
 ## Known Issues
 
 None
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
 
 ### 1.0.0
 

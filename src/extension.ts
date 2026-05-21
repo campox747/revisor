@@ -18,7 +18,7 @@ const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
     // context.globalState.update('aliasInstalled', undefined); // debug only
-    context.globalState.update('ollamaModelInstalled', undefined); // debug only
+    context.globalState.update('ollamaModelInstalled', false); // debug only
 
 
     // Set up environment
@@ -29,13 +29,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // Create custom ollama model (first run)
     await setupOllamaModel(context);
-
-    await modelCheck();    
-    await statusCheck();
-
-    // Create custom ollama model (first run)
-    await setupOllamaModel(context);
-
+    
     await modelCheck();    
 
     const watcher = vscode.workspace.createFileSystemWatcher(
@@ -45,14 +39,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         )
     );
 
-     const onFileChange = async () => {
+    const onFileChange = async () => {
         const result = await handleReview();
         if (result) {
             const { diff, remote, localBranch, remoteBranch } = result;
             const trimmedDiff = trimDiff(diff);
             const review = await reviewWithOllama(trimmedDiff, localBranch, remote, remoteBranch);
 
-            console.log(review);
+            // console.log(review);     For debug purposes only
 
             const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
             if (workspaceRoot) {
