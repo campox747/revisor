@@ -47,13 +47,14 @@ export function getOllamaExecutable(): string {
     return path.join(process.env['LOCALAPPDATA'] || '', 'Programs', 'Ollama', 'ollama.exe');
 }
 
-export async function setupOllamaModel(context: vscode.ExtensionContext): Promise<void> {
-    if (context.globalState.get('ollamaModelInstalled')) return;
+export async function setupOllamaModel(context: vscode.ExtensionContext, modelName: string): Promise<void> {
+    const customModelName = `revisor-model-${modelName}`;
+    if (context.globalState.get(`model-${modelName}-installed`)) return;
 
     const ollamaExe = getOllamaExecutable();
     const modelfilePath = path.join(SCRIPT_DIR, 'Modelfile');
 
-    fs.writeFileSync(modelfilePath, `FROM qwen2.5-coder:1.5b
+    fs.writeFileSync(modelfilePath, `FROM ${modelName}
 
 SYSTEM """
 You are a code reviewer. You will be given a git diff between two branches.
@@ -76,9 +77,9 @@ You always return a JSON object with this exact structure:
 Return ONLY the JSON object. No markdown, no explanation, no backticks.
 
 - Read the actual lines added (+) and removed (-) in the diff
-- For documentation files (.md): consequences are "No functional impact." UNLESS the content contains dangerous commands, scripts, or instructions that could cause data loss or system damage if executed
+- For documentation files (.md): consequences are "No functional impact." UNLESS the content contains bash commands, scripts, or instructions that could cause data loss or system damage if executed
 - SECURITY CHECK: If any added line contains shell commands (especially rm, dd, mkfs, curl | bash, wget | sh, chmod, sudo), flag them explicitly in risks and set verdict to "breaking" regardless of file type
-- - For "description": do not summarize in one sentence. Explain:
+- For "description": do not summarize in one sentence. Explain:
     * The exact lines added and removed.
     * What the old behaviour was before the change.
     * What the new behaviour is after the change.
@@ -88,14 +89,16 @@ Return ONLY the JSON object. No markdown, no explanation, no backticks.
     * If it's a refactor, explicitly state "behaviour is preserved but..."
     * Never write vague phrases like "may affect functionality" or "may affect how the project is displayed"
 - For "risks": 
-    * List any dangerous commands found verbatim, explain what they do.
     * Think carefully — a change that looks safe may have edge cases.
     * For refactors: could the new implementation behave differently in edge cases?
     * For dependency updates: do major version bumps introduce breaking changes?
+    * List any dangerous bash commands found verbatim, explain what they do.
+    * If there are no dangerous commands, don't mention it
+
 - For "verdict": 
     * "safe" for documentation/minor changes with no logical impact on the code.
     * "review needed" for logic changes in the code that need human verification.
-    * "breaking" for any change containing dangerous commands OR API/interface changes.
+    * "breaking" for any change containing bash commands OR API/interface changes.
 - Return ONLY a JSON object, no markdown, no backticks, no explanation.
 
 
@@ -106,9 +109,8 @@ PARAMETER num_ctx 8192
 `);
 
     try {
-        execSync(`"${ollamaExe}" create revisor-model -f "${modelfilePath}"`);
-        context.globalState.update('ollamaModelInstalled', true);
-        vscode.window.showInformationMessage('Revisor: AI model ready.');
+        execSync(`"${ollamaExe}" create ${customModelName} -f "${modelfilePath}"`);     // await the training to be done before checking
+        context.globalState.update(`model-${modelName}-installed`, true);
     } catch (error) {
         vscode.window.showErrorMessage(`Revisor: failed to create Ollama model. ${error}`);
     }

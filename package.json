@@ -24,6 +24,10 @@
             {
                 "command": "revisor.triggerReview",
                 "title": "Revisor: Trigger Review"
+            },
+            {
+                "command": "revisor.switchModel",
+                "title": "Revisor: Switch AI Model"
             }
         ],
         "configuration": {

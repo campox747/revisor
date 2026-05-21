@@ -46,12 +46,24 @@ export async function checkModel(model: string): Promise<boolean> {
     }
 }
 
-export async function modelCheck(): Promise<void> {
-    if (!await checkModel('revisor-model')) {
-        const action = await vscode.window.showErrorMessage(
-            'Revisor: revisor model not found. Please restart the extension.',
-            'Dismiss'
-        );
-    return;
+
+export async function getAvailableModels(): Promise<string[]> {
+    try {
+        const res = await fetch(`${ollamaUrl}/api/tags`);
+        const data = await res.json() as { models: { name: string }[] };
+        return data.models.map(m => m.name).sort();
+    } catch {
+        return [];
+    }
+}
+
+export async function checkCustomModel(modelName: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${ollamaUrl}/api/tags`);
+        const data = await res.json() as { models: { name: string }[] };
+        const customModelName = `revisor-model-${modelName}`;
+        return data.models.some(m => m.name.startsWith(customModelName));
+    } catch {
+        return false;
     }
 }

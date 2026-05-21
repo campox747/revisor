@@ -50,9 +50,10 @@ export function trimDiff(diff: string, maxLines = 300): string {
     return trimmed.join('\n');
 }
 
-export async function reviewWithOllama(diff: string, localBranch: string, remote: string, remoteBranch: string): Promise<string> {
+export async function reviewWithOllama(diff: string, localBranch: string, remote: string, remoteBranch: string, modelName: string): Promise<string> {
 
     const parsed = parseDiff(diff);
+    const customModelName = `revisor-model-${modelName}`;
 
     const humanReadableChanges = parsed.files.map(f => {
         const ext = f.filename.split('.').pop();
@@ -80,7 +81,7 @@ export async function reviewWithOllama(diff: string, localBranch: string, remote
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: 'revisor-model',
+            model: customModelName,
             prompt,
             stream: false
         })
