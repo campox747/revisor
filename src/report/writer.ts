@@ -49,12 +49,10 @@ export async function writeReport(
             ? review.risks.map(r => `- ${r}`).join('\n')
             : '_No risks identified._',
         ``,
+        ``,
     ].join('\n');
 
     // Create the file with a header if it doesn't exist yet
-
-    //--------------- TO DO: ADD CHECK FOR EMPTY FILE --------------------
-
 
     if (!fs.existsSync(reviewPath)) {
         fs.writeFileSync(reviewPath, `# Revisor — Code Review History\n\n`);

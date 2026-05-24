@@ -47,11 +47,20 @@ export async function checkModel(model: string): Promise<boolean> {
 }
 
 
+function normalizeBaseModelName(modelName: string): string {
+    return modelName.startsWith('revisor-model-')
+        ? modelName.replace(/^revisor-model-/, '')
+        : modelName;
+}
+
 export async function getAvailableModels(): Promise<string[]> {
     try {
         const res = await fetch(`${ollamaUrl}/api/tags`);
         const data = await res.json() as { models: { name: string }[] };
-        return data.models.map(m => m.name).sort();
+        return data.models
+            .map(m => m.name)
+            .filter(name => !name.startsWith('revisor-model-'))
+            .sort();
     } catch {
         return [];
     }
@@ -59,10 +68,11 @@ export async function getAvailableModels(): Promise<string[]> {
 
 export async function checkCustomModel(modelName: string): Promise<boolean> {
     try {
+        const baseModelName = normalizeBaseModelName(modelName);
+        const customModelName = `revisor-model-${baseModelName}`;
         const res = await fetch(`${ollamaUrl}/api/tags`);
         const data = await res.json() as { models: { name: string }[] };
-        const customModelName = `revisor-model-${modelName}`;
-        return data.models.some(m => m.name.startsWith(customModelName));
+        return data.models.some(m => m.name === customModelName);
     } catch {
         return false;
     }

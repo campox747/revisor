@@ -78,7 +78,6 @@ Return ONLY the JSON object. No markdown, no explanation, no backticks.
 
 - Read the actual lines added (+) and removed (-) in the diff
 - For documentation files (.md): consequences are "No functional impact." UNLESS the content contains bash commands, scripts, or instructions that could cause data loss or system damage if executed
-- SECURITY CHECK: If any added line contains shell commands (especially rm, dd, mkfs, curl | bash, wget | sh, chmod, sudo), flag them explicitly in risks and set verdict to "breaking" regardless of file type
 - For "description": do not summarize in one sentence. Explain:
     * The exact lines added and removed.
     * What the old behaviour was before the change.
@@ -92,8 +91,7 @@ Return ONLY the JSON object. No markdown, no explanation, no backticks.
     * Think carefully — a change that looks safe may have edge cases.
     * For refactors: could the new implementation behave differently in edge cases?
     * For dependency updates: do major version bumps introduce breaking changes?
-    * List any dangerous bash commands found verbatim, explain what they do.
-    * If there are no dangerous commands, don't mention it
+    * If there are no dangerous commands, don't mention it in the risks.
 
 - For "verdict": 
     * "safe" for documentation/minor changes with no logical impact on the code.
@@ -109,9 +107,9 @@ PARAMETER num_ctx 8192
 `);
 
     try {
-        execSync(`"${ollamaExe}" create ${customModelName} -f "${modelfilePath}"`);     // await the training to be done before checking
-        context.globalState.update(`model-${modelName}-installed`, true);
+        execSync(`"${ollamaExe}" create ${customModelName} -f "${modelfilePath}"`); 
+        vscode.window.showInformationMessage('Revisor: AI model ready'); 
     } catch (error) {
-        vscode.window.showErrorMessage(`Revisor: failed to create Ollama model. ${error}`);
+        vscode.window.showErrorMessage('Revisor: failed to create Ollama model. ${error}');
     }
 }
