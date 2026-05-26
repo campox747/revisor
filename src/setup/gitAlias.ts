@@ -49,7 +49,7 @@ export function getOllamaExecutable(): string {
 
 export async function setupOllamaModel(context: vscode.ExtensionContext, modelName: string): Promise<void> {
     const customModelName = `revisor-model-${modelName}`;
-    if (context.globalState.get(`model-${modelName}-installed`)) return;
+    if (context.globalState.get(`${customModelName}-installed`)) return;
 
     const ollamaExe = getOllamaExecutable();
     const modelfilePath = path.join(SCRIPT_DIR, 'Modelfile');
@@ -101,7 +101,6 @@ Return ONLY the JSON object. No markdown, no explanation, no backticks.
     * "breaking" for any change containing bash commands OR API/interface changes.
 - Return ONLY a JSON object, no markdown, no backticks, no explanation.
 
-
 """
 
 PARAMETER temperature 0.2
@@ -109,8 +108,9 @@ PARAMETER num_ctx 8192
 `);
 
     try {
-        execSync(`"${ollamaExe}" create ${customModelName} -f "${modelfilePath}"`);     // await the training to be done before checking
-        context.globalState.update(`model-${modelName}-installed`, true);
+        execSync(`"${ollamaExe}" create ${customModelName} -f "${modelfilePath}"`);  
+        context.globalState.update(`${customModelName}-installed`, true);
+        vscode.window.showInformationMessage(`${customModelName}-installed`);
     } catch (error) {
         vscode.window.showErrorMessage(`Revisor: failed to create Ollama model. ${error}`);
     }

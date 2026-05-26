@@ -76,7 +76,6 @@ export async function reviewWithOllama(diff: string, localBranch: string, remote
     const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff} 
     The following lines were explicitly added or removed: ${humanReadableChanges}`
 
-    console.log(diff);
     const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
