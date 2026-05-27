@@ -25,11 +25,19 @@ export async function writeReport(
 ): Promise<void> {
 
     const review: Review = JSON.parse(reviewJson);
-    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const timestamp = new Date().toLocaleString(undefined, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
     const reviewPath = path.join(workspaceRoot, 'REVIEW.md');
 
     const entry = [
-        `---`,
+        ``,
         `## Review — ${timestamp}`,
         `**Comparing:** \`${localBranch}\` ← \`${remote}/${remoteBranch}\``,
         `**Verdict:** ${verdictBadge(review.verdict)}`,
@@ -41,6 +49,7 @@ export async function writeReport(
         ...review.changes.map(c => [
             `#### \`${c.file}\``,
             `**What changed:** ${c.description}`,
+            ``,
             `**Consequences:** ${c.consequences}`,
             ``
         ].join('\n')),
@@ -49,6 +58,8 @@ export async function writeReport(
             ? review.risks.map(r => `- ${r}`).join('\n')
             : '_No risks identified._',
         ``,
+        ``,
+        ``, 
     ].join('\n');
 
     // Write to gitignore

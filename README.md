@@ -5,16 +5,22 @@ Revisor is a local, privacy-first AI assistant that helps developers understand 
 
 ## Features
 
-* **Terminal-Driven Workflow:** Trigger code reviews straight from your regular terminal flow using a native Git alias.
-* **100% Local & Private:** Your source code never leaves your machine. All analysis is performed entirely on your local hardware.
-* **Smart Pre-Merge Sight:** Automatically executes a clean `git fetch` background pipeline to see what has changed on the remote branch without polluting your current working state.
-* **Rich Markdown Reports:** Displays an interactive, clean review panel highlighting summaries, breaking changes, and structural risks.
+* **Terminal Workflow:** Trigger code reviews straight from your regular terminal using a native Git alias.
+* **Local & Private:** Your source code never leaves your machine. All analysis is performed entirely on your local hardware.
+* **Smart Pre-Merge Sight:** Automatically executes a `git fetch` background pipeline to see what has changed on the remote branch without polluting your current working state.
+* **Rich Markdown Reports:** Displays a clean review panel highlighting summaries, breaking changes, and structural risks.
 
 ## How It Works
 
-Once installed, Revisor injects a lightweight global script wrapper into your Git config. 
+Once installed, Revisor injects a lightweight global script wrapper into your Git configuration. 
 
-When you run `git revisor`, the extension uses a local file-bridge pipeline (`pending-args.txt`) to securely pass environment metrics from your shell directly to the VS Code Extension Host, circumventing CLI-to-editor limitations.
+**Before your first review**, you will need to select your preferred AI model:
+1. Open the VS Code Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
+2. Search for **"Revisor: Switch AI Model"**. 
+
+Revisor will automatically provision a dedicated custom model based on your selection to handle the report generation. You can change this active model at any time.
+
+When you run `git revisor` in your terminal, the extension uses a local file-bridge pipeline (`pending-args.txt`) to securely pass environment metrics from your shell directly to the VS Code Extension Host, seamlessly bypassing traditional CLI-to-editor limitations.
 
 ## Requirements
 
