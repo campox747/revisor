@@ -3,15 +3,16 @@
     "displayName": "Revisor",
     "description": "Understand every git pull instantly. Revisor uses local AI to summarize incoming commits into a dedicated markdown file, keeping your workflow fast and private.",
     "version": "0.0.1",
-    "publisher": "your-publisher-name",
+    "publisher": "Francesco Camporeale",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/yourname/revisor"
+        "url": "https://github.com/campox747/revisor"
     },
     "engines": {
         "vscode": "^1.116.0"
     },
+    "keywords": ["git", "commit review", "ollama", "ai", "local ai"],
     "categories": [
         "Other"
     ],
