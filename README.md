@@ -42,6 +42,13 @@ git revisor <remote> <localBranch> <remoteBranch>
 
 ```
 
+## Known Limitations
+
+- Review quality depends on the model selected. Smaller models (1.5b) may produce shallow or inconsistent analysis. For best results use `qwen2.5-coder:7b` or larger.
+- The extension requires Ollama to be running before VSCode starts. If you start VSCode before `ollama serve`, restart the extension host via `Developer: Restart Extension Host` from the command palette.
+- Currently built and optimized for Windows. MacOS and Linux support are not tested.
+- Very large diffs (500+ lines) are trimmed before being sent to the model to avoid context window limits.
+
 ## Known Issues
 
 None

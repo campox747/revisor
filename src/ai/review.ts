@@ -94,7 +94,6 @@ export async function reviewWithOllama(diff: string, localBranch: string, remote
         .replace(/```/g, '')
         .trim();
 
-    // Validate it's actually JSON before writing to REVIEW.md
     try {
         JSON.parse(cleaned);
     } catch {

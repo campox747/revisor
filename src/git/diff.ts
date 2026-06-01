@@ -11,7 +11,6 @@ import * as path from 'path';
 
 const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
 const ARGS_PATH = path.join(SCRIPT_DIR, 'pending-args.txt');
-const MOCK_DIFF_PATH = path.join(SCRIPT_DIR, 'mock-diff.txt');
 
 // ================== Functions ==================== //
     export const handleReview = async (): Promise<{ diff: string; remote: string; localBranch: string; remoteBranch: string } | undefined> => {

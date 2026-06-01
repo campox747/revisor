@@ -7,7 +7,6 @@ import * as path from 'path';
 
 // ================== Constants ==================== //
 
-const SCRIPT_DIR = path.join(os.homedir(), '.config', 'revisor');
 const OLLAMA_URL = 'http://localhost:11434';
 
 // ================== Functions ==================== //
