@@ -3,7 +3,7 @@
     "displayName": "Revisor",
     "description": "Understand every git pull instantly. Revisor uses local AI to summarize incoming commits into a dedicated markdown file, keeping your workflow fast and private.",
     "version": "0.0.1",
-    "publisher": "Francesco-Camporeale",
+    "publisher": "FrancescoCamporeale",
     "icon": "assets/logo.png",
     "license": "MIT",
     "repository": {
