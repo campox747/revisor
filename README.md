@@ -53,9 +53,7 @@ git revisor <remote> <localBranch> <remoteBranch>
 
 None
 
-### 1.0.0
-
-Initial release of Revisor
+### Version 0.0.1
 
 ---
 
