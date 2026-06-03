@@ -22,7 +22,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // If Ollama is not running, stop here
     const ollamaRunning = await statusCheck();
-    if (!ollamaRunning) return;
+    if (!ollamaRunning) {return;}
 
     // Get available models
     const availableModels = await getAvailableModels();

@@ -21,7 +21,7 @@ export function toUnixPath(p: string): string {
 }
 
 export function installGitAlias(context: vscode.ExtensionContext): void {
-    if (context.globalState.get('aliasInstalled')) return;
+    if (context.globalState.get('aliasInstalled')) {return;}
 
     const bashScriptPath = toUnixPath(SCRIPT_PATH);
     const bashArgsPath = toUnixPath(ARGS_PATH);
@@ -49,7 +49,7 @@ export function getOllamaExecutable(): string {
 
 export async function setupOllamaModel(context: vscode.ExtensionContext, modelName: string): Promise<void> {
     const customModelName = `revisor-model-${modelName}`;
-    if (context.globalState.get(`${customModelName}-installed`)) return;
+    if (context.globalState.get(`${customModelName}-installed`)) {return;}
 
     const ollamaExe = getOllamaExecutable();
     const modelfilePath = path.join(SCRIPT_DIR, 'Modelfile');

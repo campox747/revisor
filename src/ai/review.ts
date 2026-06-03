@@ -19,7 +19,7 @@ export function parseDiff(diff: string): ParsedDiff {
     for (const line of diff.split('\n')) {
         // Detect new file
         if (line.startsWith('diff --git')) {
-            if (currentFile) files.push(currentFile);
+            if (currentFile) {files.push(currentFile);}
             const match = line.match(/diff --git a\/.+ b\/(.+)/);
             currentFile = {
                 filename: match ? match[1] : 'unknown',
@@ -37,13 +37,13 @@ export function parseDiff(diff: string): ParsedDiff {
         }
     }
 
-    if (currentFile) files.push(currentFile);
+    if (currentFile) {files.push(currentFile);}
     return { files };
 }
 
 export function trimDiff(diff: string, maxLines = 300): string {
     const lines = diff.split('\n');
-    if (lines.length <= maxLines) return diff;
+    if (lines.length <= maxLines) {return diff;}
 
     const trimmed = lines.slice(0, maxLines);
     trimmed.push(`\n... diff truncated at ${maxLines} lines for performance ...`);
@@ -74,7 +74,7 @@ export async function reviewWithOllama(diff: string, localBranch: string, remote
     }).join('\n\n');
 
     const prompt = `Local branch: ${localBranch}\nRemote: ${remote}/${remoteBranch}\n\nDiff:\n${diff} 
-    The following lines were explicitly added or removed: ${humanReadableChanges}`
+    The following lines were explicitly added or removed: ${humanReadableChanges}`;
 
     const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: 'POST',
