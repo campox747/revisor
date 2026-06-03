@@ -7,7 +7,7 @@ Revisor is a local, privacy-first AI assistant that helps developers understand 
 
 * **Terminal Workflow:** Trigger code reviews straight from your regular terminal using a native Git alias.
 * **Local & Private:** Your source code never leaves your machine. All analysis is performed entirely on your local hardware.
-* **Smart Pre-Merge Sight:** Automatically executes a `git fetch` background pipeline to see what has changed on the remote branch without polluting your current working state.
+* **Clean Pre-Merge Sight:** Automatically executes a `git fetch` background pipeline to see what has changed on the remote branch without polluting your current working state.
 * **Rich Markdown Reports:** Displays a clean review panel highlighting summaries, breaking changes, and structural risks.
 
 ## How It Works
