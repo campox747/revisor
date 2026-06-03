@@ -91,9 +91,9 @@ export async function writeReport(
 
 function verdictBadge(verdict: string): string {
     switch (verdict) {
-        case 'safe':           return '✅ Safe';
-        case 'review needed':  return '⚠️ Review Needed';
-        case 'breaking':       return '🔴 Breaking';
+        case 'safe':           return 'Safe';
+        case 'review needed':  return 'Review Needed';
+        case 'breaking':       return 'Breaking';
         default:               return verdict;
     }
 }
