@@ -15,7 +15,7 @@ Revisor is a local, privacy-first AI assistant that helps developers understand 
 Once installed, Revisor injects a lightweight global script wrapper into your Git configuration. 
 
 **Before your first review**, you will need to select your preferred AI model:
-1. Open the VS Code Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
+1. Open the VS Code Command Palette (`Ctrl+Shift+P`).
 2. Search for **"Revisor: Switch AI Model"**. 
 
 Revisor will automatically provision a dedicated custom model based on your selection to handle the report generation. You can change this active model at any time.
@@ -49,13 +49,17 @@ git revisor <remote> <localBranch> <remoteBranch>
 - Currently built and optimized for Windows. MacOS and Linux support are not tested.
 - Very large diffs (500+ lines) are trimmed before being sent to the model to avoid context window limits.
 
-## Known Issues
 
-None
+## Release Notes
 
 ### Version 0.0.1
 
----
+Initial release of Revisor.
 
+### Version 0.0.2
+
+Updated logo and minor inconsistency fixes
+
+---
 Thank you for choosing Revisor!
 
